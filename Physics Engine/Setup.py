@@ -4,18 +4,19 @@ from Body import body
 class setup:
     def __init__(self):
         self.bodies = [
-            [[50.0, 600.0, 10.0],
-             [0.0, 0.0, 0.0],
+            [[0.0, 80.0, 80.0],
+             [0.0, 0.0, 100.0],
              1.0,
-             100],
-            [[100.0, 60.0, 0.0],
-             [0.0, 0.0, 0.0],
-             5.0,
-             100]
-
+             10],
+            [[0.0, 80.0, 0.0],
+             [0.0, 0.0, 30.0],
+             2.0,
+             10]
         ]
 
-    def create_bodies(self, system):
+        self.boundary = {"type": "cube", "size": 100.0}
+
+    def create_objects(self, system):
         for data in self.bodies:
             Body = body(
                 data[0],
@@ -24,7 +25,7 @@ class setup:
                 data[3]
             )
 
-            system.add_body(Body)
+            system.add_object(Body, self.boundary)
 
     def get_DEQ(self):
         return "Harmonic_Oscillator"

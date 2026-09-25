@@ -11,6 +11,6 @@ def Harmonic_Oscillator(state, constants):
     damping = 2 * w * damping_ratio
 
     x_dot = state[1]
-    #x_ddot = -w**2 * state[0] - (damping * state[1]) / mass # Damping term
+    x_ddot = -w**2 * state[0] #- (damping * state[1]) / mass # Damping term
     
-    return x_dot#np.array([x_dot, x_ddot])
+    return np.array([x_dot, x_ddot])
