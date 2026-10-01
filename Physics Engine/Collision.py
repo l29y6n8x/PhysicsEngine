@@ -1,7 +1,5 @@
 import numpy as np
 
-
-
 class collision:
     def __init__(self, body, object, type):
         self.type = type
@@ -15,19 +13,21 @@ class collision:
 
         self.collision_occurred = False
 
-    def check_collision(self):
+    def check_body_collision(self):
         if self.type == "body":
             r = self.body2.state[0] - self.body1.state[0]
             distance = np.linalg.norm(r)
             if distance <= (self.body1.radius + self.body2.radius):
                 self.resolve_body_collision()
 
-        if self.type == "boundary":
-            if self.object["type"] == "cube":
-                for i in range(3):
-                    if self.body.state[0][i] + self.body.radius >= self.object["size"] or self.body.state[0][i] - self.body.radius <= -self.object["size"]:
-                        self.resolve_boundary_collision()
-                        break
+    def check_boundary_collision(self):
+        if self.object is not None:
+            if self.type == "boundary":
+                if self.object["type"] == "cube":
+                    for i in range(3):
+                        if self.body.state[0][i] + self.body.radius >= self.object["size"] or self.body.state[0][i] - self.body.radius <= -self.object["size"]:
+                            self.resolve_boundary_collision()
+                            break
 
     def resolve_body_collision(self):
 
@@ -74,7 +74,6 @@ class collision:
         self.body2.state[0] += correction / m2
 
     def resolve_boundary_collision(self):
-        print("Boundary collision detected for body at position:", self.body.state[0])
         for i in range(3):
             if self.body.state[0][i] + self.body.radius >= self.object["size"]:
                 if self.body.state[1][i] > 0:  
@@ -86,7 +85,4 @@ class collision:
                 if self.body.state[1][i] < 0:
                     self.body.state[1][i] = -self.body.state[1][i] 
                     penetration_depth = (self.body.state[0][i] + self.object["size"]) - self.body.radius
-                    print("Penetration depth:", penetration_depth)
                     self.body.state[0][i] += -penetration_depth
-
-        

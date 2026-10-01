@@ -24,46 +24,47 @@ class Animation:
 
 
     def update(self):
-        bodies = self.simulation()
+        self.bodies = self.simulation()
         self.bodies2D = []
         self.projected_size = []
         self.cameraframe = Cameraframe(self.camera_distance, self.orientation)
 
 
-        for body in bodies:
+        for body in self.bodies:
             projection = self.cameraframe.project(body)
             if projection is not None:
                 position, size = projection
                 self.bodies2D.append(position)
                 self.projected_size.append(size)
 
-    def boundary_edges(self):
+    def boundary_edges(self):  
         edges = []
-        for boundary in self.boundaries:
-            if boundary.get("type") != "cube":
-                continue
+        if self.boundaries is not None:    
+            for boundary in self.boundaries:
+                if boundary.get("type") != "cube":
+                    continue
 
-            size = boundary["size"]
-            corners = [
-                np.array([x, y, z], dtype=float)
-                for x in (-size, size)
-                for y in (-size, size)
-                for z in (-size, size)
-            ]
-            pairs = (
-                (0, 1), (0, 2), (0, 4),
-                (1, 3), (1, 5), (2, 3),
-                (2, 6), (3, 7), (4, 5),
-                (4, 6), (5, 7), (6, 7),
-            )
+                size = boundary["size"]
+                corners = [
+                    np.array([x, y, z], dtype=float)
+                    for x in (-size, size)
+                    for y in (-size, size)
+                    for z in (-size, size)
+                ]
+                pairs = (
+                    (0, 1), (0, 2), (0, 4),
+                    (1, 3), (1, 5), (2, 3),
+                    (2, 6), (3, 7), (4, 5),
+                    (4, 6), (5, 7), (6, 7),
+                )
 
-            for start, end in pairs:
-                projected_start = self.cameraframe.project_point(corners[start])
-                projected_end = self.cameraframe.project_point(corners[end])
-                if projected_start is not None and projected_end is not None:
-                    edges.append((projected_start, projected_end))
+                for start, end in pairs:
+                    projected_start = self.cameraframe.project_point(corners[start])
+                    projected_end = self.cameraframe.project_point(corners[end])
+                    if projected_start is not None and projected_end is not None:
+                        edges.append((projected_start, projected_end))
 
-        return edges
+            return edges
 
 
     def move_camera(self, event):
@@ -97,16 +98,24 @@ class Animation:
             self.screen.fill((0, 0, 0))
 
             screen_center = np.array((self.screen.get_width() // 2, self.screen.get_height() // 2))
-            for start, end in self.boundary_edges():
-                start = tuple((start + screen_center).astype(int))
-                end = tuple((end + screen_center).astype(int))
-                pygame.draw.line(self.screen, (70, 120, 180), start, end, 1)
+            if self.boundaries is not None:
+                for boundary in self.boundary_edges():
+                    start, end = boundary
+                    start = tuple((start + screen_center).astype(int))
+                    end = tuple((end + screen_center).astype(int))
+                    pygame.draw.line(self.screen, (70, 120, 180), start, end, 1)
 
             for i in range(len(self.bodies2D)):
                 position = self.bodies2D[i] + (self.screen.get_width() // 2, self.screen.get_height() // 2)
-                pygame.draw.circle(self.screen, (255, 255, 255), position, self.projected_size[i])
+                if self.bodies[i].charge > 0:
+                    color = (255, 0, 0)  # Red for positive charge
+                elif self.bodies[i].charge < 0:
+                    color = (0, 0, 255)  # Blue for negative charge
+                else:
+                    color = (255, 255, 255)  # White for neutral charge
+                pygame.draw.circle(self.screen, color, position, self.projected_size[i])
 
             pygame.display.flip()
-            self.clock.tick(round(1 / self.dt))
+            self.clock.tick(100)
         pygame.quit()
     
